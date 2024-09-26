@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Fetcher</title>
+</head>
+<body>
+    <h1>Get Weather Data</h1>
+    
+    <!-- Input field for city name -->
+    <input type="text" id="city-input" placeholder="Enter city name">
+
+    <!-- Button to trigger the weather fetch by city -->
+    <button onclick="fetchWeatherByCity()">Get Weather by City</button>
+
+    <!-- Button to trigger the weather fetch by location -->
+    <button onclick="fetchWeatherByLocation()">Get Weather by Location</button>
+
+    <div id="result"></div>
+
+    <script>
+        // Function to fetch weather based on browser location
+        async function fetchWeatherByLocation() {
+            let latitude, longitude;
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    latitude = position.coords.latitude;
+                    longitude = position.coords.longitude;
+
+                    await getWeather(latitude, longitude);
+                }, async (error) => {
+                    console.warn('Geolocation denied. Error:', error);
+
+                    // Fallback to city input if location access is denied
+                    const cityName = document.getElementById('city-input').value;
+
+                    if (!cityName) {
+                        document.getElementById('result').innerText = 'Please enter a city name!';
+                        return;
+                    }
+
+                    // Fetch weather using city input
+                    await fetchWeatherByCity();
+                });
+            } else {
+                document.getElementById('result').innerText = 'Geolocation is not supported by this browser.';
+            }
+        }
+
+        // Function to fetch weather based on city input
+        async function fetchWeatherByCity() {
+            const cityName = document.getElementById('city-input').value;
+
+            if (!cityName) {
+                document.getElementById('result').innerText = 'Please enter a city name!';
+                return;
+            }
+
+            try {
+                // First API call: Get city data
+                const cityResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${cityName}&count=1&language=en&format=json`);
+                const cityData = await cityResponse.json();
+
+                if (cityData && cityData.results && cityData.results.length > 0) {
+                    const city = cityData.results[0];
+                    const latitude = city.latitude;
+                    const longitude = city.longitude;
+
+                    await getWeather(latitude, longitude);
+                } else {
+                    document.getElementById('result').innerText = 'City not found!';
+                }
+            } catch (error) {
+                console.error('Error fetching city data:', error);
+                document.getElementById('result').innerText = 'Failed to fetch city data.';
+            }
+        }
+
+        // Function to get weather based on latitude and longitude
+        async function getWeather(latitude, longitude) {
+            try {
+                const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&forecast_days=1&timezone=Europe%2FBerlin`);
+                const weatherData = await weatherResponse.json();
+
+                if (weatherData.current_weather) {
+                    const currentTemp = weatherData.current_weather.temperature;
+                    document.getElementById('result').innerText = `Location: (${latitude}, ${longitude})\nCurrent Temperature: ${currentTemp}°C`;
+                } else {
+                    document.getElementById('result').innerText = 'Weather data not available!';
+                }
+            } catch (error) {
+                console.error('Error fetching weather data:', error);
+                document.getElementById('result').innerText = 'Failed to fetch weather data.';
+            }
+        }
+    </script>
+</body>
+</html>

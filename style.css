@@ -1,0 +1,39 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+form {
+    margin: 0 auto;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin: 5px 0;
+}
+
+input {
+    padding: 5px;
+    margin: 5px 0 15px 0;
+}
+
+button {
+    padding: 10px;
+}
+
+p {
+    text-align: center;
+}
+
+.error-messages, .success-message {
+    color: red;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.success-message {
+    color: green;
+}
